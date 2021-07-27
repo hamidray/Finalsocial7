@@ -1,0 +1,532 @@
+<template>
+
+ <form @submit.prevent="sendFile" enctype="multipart/form-data">
+  <div v-if="message"
+  :class="`message  ${error ? 'is-danger' : 'is-success'}`"
+  >
+    <div class="message-body">{{message}}</div>
+   </div>
+
+   <div class="field">
+       <div class="file is-boxed is-primary">
+      <label  class="file-label">
+       <input
+        type="file"
+        ref="file"
+        @change="selectFile"
+        class="file-input"
+      />
+      <span class="file-cta">
+      <span class="file-icon">
+           <i class="fas fa-upload"></i>
+      </span> 
+           <span class="file-label">
+               Choose a file...
+      </span> 
+      </span>
+         <span v-if="file" class="file-name">{{file.name}}</span>
+        </label>
+      </div>
+   </div>
+     <div class="field">   
+      <button class="button is-info">Send</button>
+     </div>
+   </form>
+      
+</template>
+
+
+<script>
+import AuthenticationService from '@/services/AuthenticationService'
+
+ export default {
+  name: "Addgifs",
+  data () {
+   return {
+     file: "",
+     message: "",
+     error: false
+   };
+ },
+
+ methods: {
+    selectFile() {
+       const file = this.$refs.file.files[0];
+       const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+       const MAX_SIZE = 200000;
+       const tooLarge = file.size > MAX_SIZE;
+
+
+       if (allowedTypes.includes(file.type) && !tooLarge) {
+         this.file = file;
+         this.error = false;
+         this.message = "";
+       } else {
+         this.error = true;
+         this.message = tooLarge ? `Too large .Max size is ${MAX_SIZE/1000}kb`
+         : "only images are allowed";
+      }
+      
+   },
+
+    async sendFile() { 
+       const formData = new FormData();
+       formData.append('file', this.file);
+
+       try {
+           await AuthenticationService.sendFile('upload', formData);
+           this.message = " File has been uploaded";
+           this.file = "";
+           this.error = false;
+         } catch(err) {
+           this.message = err.response.data.error;
+           this.error = true;
+       }
+     }
+   }
+}
+
+</script>
+
+
+
+///const fileFilter = function(req, file, cb) {
+  ///const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+     
+ ///  if(!allowedTypes.includes(file.mimetype)) {
+ /// const error = new Error("Wrong file type");
+   ///   error.code = "LIMIT_FILE_TYPES";
+   ///   return cb(error, false);
+  ///  }
+  
+   // cb(null, true);
+ // };
+    
+  /// const MAX_SIZE = 200000;
+   //const upload = multer({
+  /// dest: "./uploads/",
+    ///fileFilter,
+   // limits: {
+    // fieldSize: MAX_SIZE
+      
+   /// }
+    
+ /// });
+   
+  ///app.post("/upload", upload.single("file"), (req, res) => {
+    // res.json({ file: req.file })
+     
+  ///});
+
+  //app.use(function(err, req, res, next)  {
+   ///  if (err.code === "LIMIT_FILE_TYPES") {
+   ///  res.status(422).json({ error: "Only images are allowed"});
+    //   return;
+  ///   }
+
+   /// if (err.code === "LIMIT_FILE_SIZE") {
+  ///   res.status(422).json({ error: `Too large. Max size is ${MAX_SIZE /1000}kb`});
+  ///   return;
+   //  }
+
+ /// }); 
+  
+
+
+
+
+
+///////
+
+exports.modifySauce = (req, res, next) => {
+     let sauce = new Sauce({ _id: req.params._id }); 
+     if (req.file) {
+         const url = req.protocol + '://' + req.get('host');
+         req.body.sauce = JSON.parse(req.body.sauce);
+       sauce = {
+     _id: req.params.id,  
+     userId: req.body.sauce.userId,
+     imageUrl: url + '/images/' + req.file.filename,
+     title: req.body.sauce.title,
+     
+    };
+ } else {
+   sauce = {  
+     _id: req.params.id,  
+     userId: req.body.userId,
+     title: req.body.name,
+      //imageUrl:  req.body.imageUrl,
+     
+     
+   };
+ }
+   Sauce.updateOne({_id: req.params.id}, sauce).then(
+     () => {
+       res.status(201).json({
+         message: 'Sauce updated successfully!'
+       });
+     }
+   ).catch(
+     (error) => {
+       res.status(400).json({
+         error: error
+       });
+     }
+   );
+ };
+ 
+ exports.deleteSauce = (req, res, next) => {
+     Sauce.findOne({_id: req.params.id}).then(
+       (sauce) => {
+         const filename = sauce.imageUrl.split('/images/')[1];
+         fs.unlink('images/' + filename, () => {
+           Sauce.deleteOne({_id: req.params.id}).then(
+             () => {
+               res.status(200).json({
+                 message: 'Deleted!'
+               });
+             }
+           ).catch(
+             (error) => {
+               res.status(400).json({
+                 error: error
+               });
+             }
+           );
+         });
+       }
+     );
+   };
+  
+ exports.getAllSauce = (req, res, next) => {
+   Sauce.find().then(
+     (sauces) => {
+       res.status(200).json(sauces);
+     }
+   ).catch(
+     (error) => {
+       res.status(400).json({
+         error: error
+       });
+     }
+   );
+ };
+
+
+
+
+
+
+
+
+
+ <template>
+  <div>
+    <form @submit="postData" method="post">
+      <h3> Create Post </h3>
+       <input type="text" name="author" placeholder="author" v-model="posts.author"> <br> <br>
+       <input type="text" name="title" placeholder="title" v-model="posts.title"> <br> <br>
+       <button type="submit">Post</button>
+    </form>
+    </div>
+    </template>
+
+<script>
+////import GifsService from '@/services/GifsService'
+//import axios from 'axios'
+
+export default {
+ name: 'Addgifs',
+  data(){
+    return {
+      posts:{
+        author:null,
+        title:null
+        
+     }
+      
+    }
+  
+  },
+  
+  methods:{
+ postData(e)
+    {
+      console.log(this.posts)
+     ////// GifsService.postData
+                
+       //// .then((result) => {
+             ////  console.warn(result) 
+
+          
+          e.preventDefault();
+    }
+  }
+  
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="scss">
+
+</style>
+
+
+
+
+<template>
+     <form @submit.prevent="sendFile" enctype="multipart/form-data">
+     <div class="field">
+     
+     <div class="file is-boxed is-warning">
+       <label class="file-label">
+       <input 
+            type="file"
+            ref="file"
+            @change="selectFile"
+            class="file-input"
+        />
+          
+         <span class="file-cta">
+           <span class="file-icon">
+             <i class="fas fa-upload"></i> 
+        
+         </span>
+
+         <span class="file-label">
+           Choose a file...
+         </span>
+         </span>
+          
+           <span v-if="file" class="file-name">{{file.name}}</span>
+
+         </label>
+         
+       </div>
+    </div>
+         <button class="button is-info">Send</button>
+
+    </form>
+    </template>
+
+<script>
+import GifsService from '@/services/GifsService'
+//import axios from 'axios'
+export default {
+  name: "Addgifs",
+  data() {
+    return {
+      file: ""
+
+    }
+  },
+  methods: {
+     selectFile() {
+         this.file = this.$refs.file.files[0];
+    },
+    async sendFile() {
+      const formData = new FormData();
+      formData.append('file' , this.file);
+
+
+     try {
+       await GifsService.post('/Addgifs', formData)
+     } catch(err) {
+       console.log(err);
+     }
+
+      
+    }
+  }
+}
+
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="scss">
+
+</style>  
+
+
+
+const {Gifs} = require('../models')
+///const Sauce = require('../models');
+//const fs = require('fs');
+
+
+module.exports = {
+ ///// async index (req, res) {
+    //// try {
+      ////   const songs = await Gif.findAll({
+     ////         limit: 10
+    ////      })
+   ////       res.send(songs)
+  ////   } catch (err) {
+   ////       res.status(500).send({
+    ////        error: 'An error has occured trrying to fetch '
+   ///     })
+  ///    }
+   // },
+
+   async post (req, res) {
+      try {
+          const posts = await Gifs.create(req.body)
+          res.send(posts)
+        } catch (err) {
+          res.status(500).send({
+              error: 'An error has occured trrying to create in'
+          })
+      }
+  }
+}
+
+
+module.exports = (sequelize, DataTypes) => {
+   const Gifs = sequelize.define('Gifs', {
+     userId: DataTypes.STRING, 
+     author: DataTypes.STRING,
+     title: DataTypes.STRING,
+     
+   })
+      
+      return Gifs
+   
+   }
+
+
+
+   ///const multer = require('./middleware/multer-config');
+
+///const multer = require("multer")
+const AuthenticationController = require('./controllers/AuthenticationController')
+const GifsController = require('./controllers/GifsController')
+
+module.exports = (app) => {
+  app.post('/register', 
+    AuthenticationController.register)
+ 
+  app.post('/login', 
+  AuthenticationController.login)
+
+  ///app.get('/addgifs',
+  /// GifsController.index)
+
+  
+   app.post('/addgifs',
+   GifsController.post)
+
+///////////Images////////////////////////
+
+///const upload = multer({
+  //dest: "./images/"
+//})
+   
+  
+   //app.post("/addgifs", send.single("file"), (req, res) => {
+    // res.json({ file: req.file })
+  // })
+
+
+
+  ///const fileFilter = function(req, file, cb) {
+  ///const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+     
+ ///  if(!allowedTypes.includes(file.mimetype)) {
+ /// const error = new Error("Wrong file type");
+   ///   error.code = "LIMIT_FILE_TYPES";
+   ///   return cb(error, false);
+  ///  }
+  
+   // cb(null, true);
+ // };
+    
+  /// const MAX_SIZE = 200000;
+   //const upload = multer({
+  /// dest: "./uploads/",
+    ///fileFilter,
+   // limits: {
+    // fieldSize: MAX_SIZE
+      
+   /// }
+    
+ /// });
+   
+  ///app.post("/upload", upload.single("file"), (req, res) => {
+    // res.json({ file: req.file })
+     
+  ///});
+
+  //app.use(function(err, req, res, next)  {
+   ///  if (err.code === "LIMIT_FILE_TYPES") {
+   ///  res.status(422).json({ error: "Only images are allowed"});
+    //   return;
+  ///   }
+
+   /// if (err.code === "LIMIT_FILE_SIZE") {
+  ///   res.status(422).json({ error: `Too large. Max size is ${MAX_SIZE /1000}kb`});
+  ///   return;
+   //  }
+
+ /// }); 
+     
+}
+
+ <template>
+        
+  <!--<div class="form-group">
+    <label for="exampleFormControlFile1">ADD Gifs</label>
+    <input type="file" class="form-control-file" id="exampleFormControlFile1">
+  </div>!--->
+  
+    <!---<div class="form-group">
+    <label for="exampleFormControlTextarea1">Create Post</label>
+    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+  </div><!-->
+
+    
+
+  <div class="form-group">
+    
+     <h3>Create Post</h3>
+          
+        <label for="exampleFormControlTextarea1">GIFs</label>
+          <input type="text" class="form-control" v-model="gags.author" placeholder="Title" />
+        <br>
+        <label>Title</label>
+         <input type="text" class="form-control" v-model="gags.title" placeholder="Title" />
+      
+       <button class="btn btn-primary btn-block"
+        @click="create">
+     Send</button>
+   </div>
+    </template>
+
+<script>
+import GifsService from '@/services/GifsService'
+export default {
+  name: "Addgifs",
+  data () {
+    return {
+      gags: {
+     author:null,
+      title: null,
+      }
+    }
+  },
+  methods: {
+  async create () {
+     // try {
+    const response =  await  GifsService.post(this.gags)
+    console.log(response)
+    //   } catch (err) {
+         
+     //   console.log(err)
+//}
+     this.$router.push('/')
+    }
+  }
+}
+</script>
+
+<style>
+</style>
