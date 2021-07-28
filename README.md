@@ -7,7 +7,7 @@ https://github.com/hamidray/Finalsocial7
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!AFTER SETUP YOUR DATABASE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                           * Project structure *:
 
-1- Please clone backend & frontend folder from your new windows of ""Visual Studio Code"".
+1- Please clone backend & frontend folder from your new window of ""Visual Studio Code"".
 2- From backend : run npm start =>
 3- From frontend : run npm run serve =>
 
