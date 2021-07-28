@@ -5,6 +5,7 @@ My Repo is :
 https://github.com/hamidray/Finalsocial7
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!AFTER SETUP YOUR DATABASE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                           * Project structure *:
 
 1- Please clone backend & frontend folder from your new window of ""Visual Studio Code"".
